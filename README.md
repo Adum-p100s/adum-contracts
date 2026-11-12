@@ -11,8 +11,42 @@ Shared schemas and types for **ADUM: Artificial Dungeon Master** (CSCI 318, The 
 
 Changing a schema here changes the contract for everyone, so bump the version and tell the team at Friday sync.
 
-## Setup
-Package setup arrives with ticket T002 (zod schemas v0).
+## Install (in adum-backend or adum-frontend)
+
+```bash
+npm install github:Adum-p100s/adum-contracts#v0.1.0
+```
+The repo is private, so your machine needs GitHub access to it (you're a collaborator). npm builds the package on install (`prepare` script).
+
+```ts
+import { Character, GameEvent, MapData, statModifier } from 'adum-contracts';
+import { sampleMapAssembly, sampleEvents } from 'adum-contracts/samples';
+
+const result = GameEvent.safeParse(json);   // validate anything crossing a boundary
+if (!result.success) console.error(result.error.issues);
+type Event = GameEvent;                     // every schema is also a TS type
+```
+
+## What's in v0.1.0
+| Schema | Key rules |
+|---|---|
+| `Stats` | STR, DEX, CON, INT, WIS, CHA; integers 1-20 (cap 20). `statModifier(score)` = floor((score-10)/2). `POINT_BUY`: 27 points, 8-15 |
+| `ClassId` / `Difficulty` | `fighter`, `wizard`, `rogue` / `normal`, `hardcore` |
+| `Item` | type, rarity (`common`..`legendary`), weapons need `damage` + `damageStat`, armor needs `armorBonus`, consumables need `heal` or `restoreMana` |
+| `Power` | class (or any), mana cost, cooldown, target, stat, damage or heal dice |
+| `EnemyTemplate` / `EnemyInstance` | fixed template rows / one enemy in a live fight |
+| `Character` | class, difficulty, level (no cap), xp, stats, hp/mana <= max, inventory, equipment (`weapon`, `armor`, `accessory`), powers |
+| `MapData` | what Gemini fills in: `map_Size` 64-128 (square), `levelNumber`, `environment_Type`, `componentData` (roads, `roadConnections` = map edges, settlements, event characters placed by **zone**, never coordinates) |
+| `MapAssembly` | what map gen outputs: row-major `tiles` + `walkable` (size x size), overlays, spawns, player start |
+| `GameEvent` | SSE messages, switch on `type`: `narration_chunk`, `roll_result`, `stat_change`, `map`, `popup`, `choices`, `error`, `combat_update`, `quest_update`, `chapter_end`, `game_over` |
+
+Ids (`iron_sword`, `goblin`) are lowercase and point at rows in the fixed Supabase tables. Dice use notation like `1d8` or `2d6+3`.
+`adum-contracts/samples` has a valid example of every schema, including a 64x64 `sampleMapAssembly` for frontend mocks.
+
+## Changing a schema
+1. Edit `src/`, add a valid and an invalid case in `test/`, run `npm test`.
+2. Bump `version` in `package.json` and `CONTRACTS_VERSION` in `src/index.ts` (breaking change = minor bump while we're on 0.x).
+3. After merge, tag it: `git tag v0.2.0 && git push origin v0.2.0`, then update the `#tag` in the other repos.
 
 ## Working rules
 
