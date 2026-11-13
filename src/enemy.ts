@@ -1,6 +1,11 @@
 import { z } from 'zod';
 import { Dice, Id, NonNegInt, PosInt } from './common.js';
 import { Stats } from './stats.js';
+import { ActiveEffect } from './power.js';
+
+/** How an enemy picks its action in combat (T064). */
+export const AiProfile = z.enum(['aggressive', 'caster', 'cowardly']);
+export type AiProfile = z.infer<typeof AiProfile>;
 
 /** A row of the fixed enemy-templates table. Instances are scaled to the player's level. */
 export const EnemyTemplate = z.strictObject({
@@ -15,6 +20,7 @@ export const EnemyTemplate = z.strictObject({
   damage: Dice,
   powers: z.array(Id).default([]),
   xpReward: NonNegInt,
+  aiProfile: AiProfile.default('aggressive'),
   tags: z.array(z.string().min(1).max(30)).default([]), // e.g. "undead", "beast", "boss"
 });
 export type EnemyTemplate = z.infer<typeof EnemyTemplate>;
@@ -28,6 +34,7 @@ export const EnemyInstance = z
     level: PosInt,
     hp: NonNegInt,
     maxHp: PosInt,
+    effects: z.array(ActiveEffect).default([]),
   })
   .refine((e) => e.hp <= e.maxHp, { message: 'hp cannot exceed maxHp', path: ['hp'] });
 export type EnemyInstance = z.infer<typeof EnemyInstance>;

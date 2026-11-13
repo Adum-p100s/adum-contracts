@@ -86,3 +86,37 @@ describe('GameEvent', () => {
   it('choices need 2-4 options', () => bad(GameEvent, { ...sampleEvents[5], options: [{ id: 'a', label: 'only one' }] }));
   it('hardcore death must be permadeath', () => bad(GameEvent, { ...sampleEvents[10], difficulty: 'hardcore' }));
 });
+
+describe('v0.2.0: buffs and AI profile', () => {
+  it('buff and debuff powers are valid', async () => {
+    const { sampleBuffPower, sampleDebuffPower } = await import('../src/samples.js');
+    ok(Power, sampleBuffPower);
+    ok(Power, sampleDebuffPower);
+  });
+  it('a buff-only power no longer needs damage or heal', async () => {
+    const { sampleBuffPower } = await import('../src/samples.js');
+    expect(sampleBuffPower.damage).toBeUndefined();
+    bad(Power, { ...sampleBuffPower, buff: undefined });
+  });
+  it('buff rules', async () => {
+    const { sampleBuffPower } = await import('../src/samples.js');
+    bad(Power, { ...sampleBuffPower, buff: { kind: 'ac', amount: 0, durationTurns: 3 } });
+    bad(Power, { ...sampleBuffPower, buff: { kind: 'ac', amount: 2, durationTurns: 11 } });
+    bad(Power, { ...sampleBuffPower, buff: { kind: 'check', amount: 2, durationTurns: 2 } });
+    ok(Power, { ...sampleBuffPower, buff: { kind: 'check', amount: 2, durationTurns: 2, stat: 'WIS' } });
+    bad(Power, { ...sampleBuffPower, buff: { kind: 'ac', amount: 2, durationTurns: 2, stat: 'WIS' } });
+  });
+  it('enemy aiProfile defaults to aggressive and rejects unknown styles', () => {
+    const { aiProfile, ...noProfile } = sampleEnemyTemplate;
+    expect(aiProfile).toBe('cowardly');
+    expect(EnemyTemplate.parse(noProfile).aiProfile).toBe('aggressive');
+    bad(EnemyTemplate, { ...sampleEnemyTemplate, aiProfile: 'berserk' });
+  });
+  it('effects on enemies and the player in combat', () => {
+    ok(EnemyInstance, sampleEnemyInstance);
+    expect(EnemyInstance.parse({ ...sampleEnemyInstance, effects: undefined }).effects).toEqual([]);
+    bad(EnemyInstance, { ...sampleEnemyInstance, effects: [{ powerId: 'x', kind: 'speed', amount: 1, turnsLeft: 1 }] });
+    const combat = sampleEvents.find((e) => e.type === 'combat_update');
+    expect(combat && combat.type === 'combat_update' && combat.playerEffects.length).toBe(1);
+  });
+});

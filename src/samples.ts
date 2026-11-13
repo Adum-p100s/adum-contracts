@@ -21,13 +21,23 @@ export const samplePower: Power = {
   manaCost: 2, cooldownTurns: 0, target: 'enemy', stat: 'INT', damage: '1d10',
 };
 
+export const sampleBuffPower: Power = {
+  id: 'shield', name: 'Shield', description: 'A shimmering ward.', classId: 'wizard', minLevel: 1,
+  manaCost: 2, cooldownTurns: 3, target: 'self', stat: 'INT', buff: { kind: 'ac', amount: 2, durationTurns: 3 },
+};
+export const sampleDebuffPower: Power = {
+  id: 'hamstring', name: 'Hamstring', description: '', classId: 'rogue', minLevel: 2,
+  manaCost: 1, cooldownTurns: 2, target: 'enemy', stat: 'DEX', damage: '1d4', buff: { kind: 'attack', amount: -2, durationTurns: 2 },
+};
+
 export const sampleEnemyTemplate: EnemyTemplate = {
   id: 'goblin', name: 'Goblin', description: '', baseLevel: 1, hp: 7, armorClass: 13,
   stats: { STR: 8, DEX: 14, CON: 10, INT: 10, WIS: 8, CHA: 8 }, attackBonus: 4, damage: '1d6+2',
-  powers: [], xpReward: 50, tags: ['humanoid'],
+  powers: [], xpReward: 50, aiProfile: 'cowardly', tags: ['humanoid'],
 };
 export const sampleEnemyInstance: EnemyInstance = {
   instanceId: 'goblin#1', templateId: 'goblin', name: 'Goblin Scout', level: 1, hp: 7, maxHp: 7,
+  effects: [{ powerId: 'hamstring', kind: 'attack', amount: -2, turnsLeft: 2 }],
 };
 
 export const sampleCharacter: Character = {
@@ -75,7 +85,7 @@ export const sampleEvents: GameEvent[] = [
   { type: 'popup', id: 'p1', title: 'Item found', body: 'You found a Healing Potion.', variant: 'reward' },
   { type: 'choices', choiceId: 'c1', prompt: 'The road forks.', options: [{ id: 'north', label: 'Take the mountain pass' }, { id: 'south', label: 'Follow the river' }] },
   { type: 'error', code: 'GM_UNAVAILABLE', message: 'The GM needs a breath. Try again.', retryable: true },
-  { type: 'combat_update', combatId: 'f1', round: 1, turnOrder: [{ id: 'player', name: 'Brannoc', kind: 'player' }, { id: 'goblin#1', name: 'Goblin Scout', kind: 'enemy' }], activeId: 'player', enemies: [sampleEnemyInstance], ended: false },
+  { type: 'combat_update', combatId: 'f1', round: 1, turnOrder: [{ id: 'player', name: 'Brannoc', kind: 'player' }, { id: 'goblin#1', name: 'Goblin Scout', kind: 'enemy' }], activeId: 'player', enemies: [sampleEnemyInstance], playerEffects: [{ powerId: 'shield', kind: 'ac', amount: 2, turnsLeft: 3 }], ended: false },
   { type: 'quest_update', quests: [{ id: 'q1', title: 'Reach the village', description: '', status: 'active' }] },
   { type: 'chapter_end', chapterNumber: 1, branchTaken: 'south', summary: 'You followed the river to Millbrook.' },
   { type: 'game_over', difficulty: 'normal', outcome: 'restart_chapter', reason: 'Fell to the goblin chief.' },

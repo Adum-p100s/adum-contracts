@@ -14,7 +14,7 @@ Changing a schema here changes the contract for everyone, so bump the version an
 ## Install (in adum-backend or adum-frontend)
 
 ```bash
-npm install github:Adum-p100s/adum-contracts#v0.1.0
+npm install github:Adum-p100s/adum-contracts#v0.2.0
 ```
 The repo is private, so your machine needs GitHub access to it (you're a collaborator). npm builds the package on install (`prepare` script).
 
@@ -27,18 +27,18 @@ if (!result.success) console.error(result.error.issues);
 type Event = GameEvent;                     // every schema is also a TS type
 ```
 
-## What's in v0.1.0
+## What's in v0.2.0
 | Schema | Key rules |
 |---|---|
 | `Stats` | STR, DEX, CON, INT, WIS, CHA; integers 1-20 (cap 20). `statModifier(score)` = floor((score-10)/2). `POINT_BUY`: 27 points, 8-15 |
 | `ClassId` / `Difficulty` | `fighter`, `wizard`, `rogue` / `normal`, `hardcore` |
 | `Item` | type, rarity (`common`..`legendary`), weapons need `damage` + `damageStat`, armor needs `armorBonus`, consumables need `heal` or `restoreMana` |
-| `Power` | class (or any), mana cost, cooldown, target, stat, damage or heal dice |
-| `EnemyTemplate` / `EnemyInstance` | fixed template rows / one enemy in a live fight |
+| `Power` | class (or any), mana cost, cooldown, target, stat, and at least one of damage dice, heal dice or a `buff` (`ac` / `attack` / `damage` / `check`, amount -10..10 but not 0, 1-10 turns; negative = debuff) |
+| `EnemyTemplate` / `EnemyInstance` | fixed template rows with `aiProfile` (`aggressive` default, `caster`, `cowardly`) / one enemy in a live fight, with its active `effects` |
 | `Character` | class, difficulty, level (no cap), xp, stats, hp/mana <= max, inventory, equipment (`weapon`, `armor`, `accessory`), powers |
 | `MapData` | what Gemini fills in: `map_Size` 64-128 (square), `levelNumber`, `environment_Type`, `componentData` (roads, `roadConnections` = map edges, settlements, event characters placed by **zone**, never coordinates) |
 | `MapAssembly` | what map gen outputs: row-major `tiles` + `walkable` (size x size), overlays, spawns, player start |
-| `GameEvent` | SSE messages, switch on `type`: `narration_chunk`, `roll_result`, `stat_change`, `map`, `popup`, `choices`, `error`, `combat_update`, `quest_update`, `chapter_end`, `game_over` |
+| `GameEvent` | SSE messages, switch on `type`: `narration_chunk`, `roll_result`, `stat_change`, `map`, `popup`, `choices`, `error`, `combat_update` (with `playerEffects`), `quest_update`, `chapter_end`, `game_over` |
 
 Ids (`iron_sword`, `goblin`) are lowercase and point at rows in the fixed Supabase tables. Dice use notation like `1d8` or `2d6+3`.
 `adum-contracts/samples` has a valid example of every schema, including a 64x64 `sampleMapAssembly` for frontend mocks.
@@ -69,3 +69,7 @@ Ids (`iron_sword`, `goblin`) are lowercase and point at rows in the fixed Supaba
 
 ## License
 MIT, see [LICENSE](LICENSE).
+
+## Changelog
+- **0.2.0:** `Power.buff` (buffs and debuffs, T062), `ActiveEffect` on `EnemyInstance.effects` and `combat_update.playerEffects`, `EnemyTemplate.aiProfile` (T064). Additive: every 0.1.0 object still parses.
+- **0.1.0:** first schemas (T002).

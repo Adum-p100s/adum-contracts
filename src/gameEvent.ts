@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { NonNegInt, PosInt } from './common.js';
 import { Difficulty } from './classes.js';
 import { EnemyInstance } from './enemy.js';
+import { ActiveEffect } from './power.js';
 import { MapAssembly } from './mapData.js';
 import { StatKey } from './stats.js';
 
@@ -78,6 +79,7 @@ export const CombatUpdateEvent = z.strictObject({
   turnOrder: z.array(z.strictObject({ id: z.string().min(1).max(64), name: z.string().max(80), kind: z.enum(['player', 'enemy']) })).min(1),
   activeId: z.string().min(1).max(64),
   enemies: z.array(EnemyInstance),
+  playerEffects: z.array(ActiveEffect).default([]),
   ended: z.boolean(),
   outcome: z.enum(['victory', 'defeat', 'fled']).optional(),
 });
