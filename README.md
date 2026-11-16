@@ -1,5 +1,7 @@
 # adum-contracts
 
+[![CI](https://github.com/Adum-p100s/adum-contracts/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Adum-p100s/adum-contracts/actions/workflows/ci.yml)
+
 Shared schemas and types for **ADUM: Artificial Dungeon Master** (CSCI 318, The P100's). This is the single source of truth that `adum-frontend` and `adum-backend` both install.
 
 **Owner:** Saba, with Mohamed for the Gemini tool schemas
