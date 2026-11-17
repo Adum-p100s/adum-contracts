@@ -25,6 +25,14 @@ export const sampleBuffPower: Power = {
   id: 'shield', name: 'Shield', description: 'A shimmering ward.', classId: 'wizard', minLevel: 1,
   manaCost: 2, cooldownTurns: 3, target: 'self', stat: 'INT', buff: { kind: 'ac', amount: 2, durationTurns: 3 },
 };
+export const sampleStunPower: Power = {
+  id: 'force_push', name: 'Force Push', description: 'A blast that hurls a foe away.', classId: 'wizard', minLevel: 1,
+  manaCost: 2, cooldownTurns: 2, target: 'enemy', stat: 'INT', damage: '1d6', buff: { kind: 'stun', amount: -1, durationTurns: 1 },
+};
+export const sampleEvadePower: Power = {
+  id: 'blink_step', name: 'Blink Step', description: 'Swap places with an afterimage.', classId: 'wizard', minLevel: 1,
+  manaCost: 2, cooldownTurns: 3, target: 'self', stat: 'INT', buff: { kind: 'evade', amount: 1, durationTurns: 3 },
+};
 export const sampleDebuffPower: Power = {
   id: 'hamstring', name: 'Hamstring', description: '', classId: 'rogue', minLevel: 2,
   manaCost: 1, cooldownTurns: 2, target: 'enemy', stat: 'DEX', damage: '1d4', buff: { kind: 'attack', amount: -2, durationTurns: 2 },
