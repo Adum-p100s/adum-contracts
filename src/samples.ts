@@ -79,7 +79,7 @@ export const sampleMapAssembly = makeSampleMapAssembly();
 /** One of every GameEvent type, in roughly the order a turn would send them. */
 export const sampleEvents: GameEvent[] = [
   { type: 'narration_chunk', text: 'The goblin lunges from the brush. ', done: false },
-  { type: 'roll_result', rollId: 'r1', stat: 'DEX', reason: 'Dodge the goblin', roll: 14, modifier: 1, total: 15, dc: 13, success: true, critical: 'none' },
+  { type: 'roll_result', rollId: 'r1', stat: 'DEX', reason: 'Dodge the goblin', roll: 14, advantage: 'advantage', dice: [6, 14], modifier: 1, total: 15, dc: 13, success: true, critical: 'none' },
   { type: 'stat_change', reason: 'Goblin hit you', hp: 9 },
   { type: 'map', map: sampleMapAssembly },
   { type: 'popup', id: 'p1', title: 'Item found', body: 'You found a Healing Potion.', variant: 'reward' },
@@ -91,3 +91,6 @@ export const sampleEvents: GameEvent[] = [
   { type: 'game_over', difficulty: 'normal', outcome: 'restart_chapter', reason: 'Fell to the goblin chief.' },
   { type: 'narration_chunk', text: 'It falls back, snarling.', done: true },
 ];
+
+/** The richer T066 mock map (forest, pond, village, forked road) plus its map_Data and starting fog of war. */
+export { MOCK_MAP_SEED, MOCK_MAP_SIZE, makeMockMap, mockMap, mockMapData, mockMapRevealed } from './mockMap.js';

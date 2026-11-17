@@ -13,21 +13,41 @@ export const NarrationChunkEvent = z.strictObject({
   done: z.boolean(),
 });
 
-/** A d20 check: roll + modifier vs DC. Shown with the dice animation. */
+/** How a d20 check is rolled: one die, or two keeping the higher (advantage) / lower (disadvantage). */
+export const RollAdvantage = z.enum(['none', 'advantage', 'disadvantage']);
+export type RollAdvantage = z.infer<typeof RollAdvantage>;
+
+const D20 = z.number().int().min(1).max(20);
+
+/**
+ * A d20 check: roll + modifier vs DC. Shown with the dice animation.
+ * `roll` is the die that counts. `dice` lists every d20 thrown (2 with advantage or disadvantage),
+ * so the UI can animate both and highlight the kept one.
+ */
 export const RollResultEvent = z
   .strictObject({
     type: z.literal('roll_result'),
     rollId: z.string().min(1).max(64),
     stat: StatKey,
     reason: z.string().max(200),
-    roll: z.number().int().min(1).max(20),
+    roll: D20,
+    advantage: RollAdvantage.default('none'),
+    dice: z.array(D20).min(1).max(2).optional(),
     modifier: z.number().int().min(-10).max(30),
     total: z.number().int(),
     dc: z.number().int().min(1).max(40),
     success: z.boolean(),
     critical: z.enum(['none', 'success', 'failure']),
   })
-  .refine((r) => r.total === r.roll + r.modifier, { message: 'total must equal roll + modifier', path: ['total'] });
+  .refine((r) => r.total === r.roll + r.modifier, { message: 'total must equal roll + modifier', path: ['total'] })
+  .refine((r) => !r.dice || r.dice.length === (r.advantage === 'none' ? 1 : 2), {
+    message: 'dice needs 1 die without advantage, 2 with advantage or disadvantage',
+    path: ['dice'],
+  })
+  .refine((r) => !r.dice || r.roll === (r.advantage === 'disadvantage' ? Math.min(...r.dice) : Math.max(...r.dice)), {
+    message: 'roll must be the kept die (higher with advantage, lower with disadvantage)',
+    path: ['roll'],
+  });
 
 /** New values after a change (only the fields that changed are sent). */
 export const StatChangeEvent = z.strictObject({

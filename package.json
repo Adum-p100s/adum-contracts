@@ -1,6 +1,6 @@
 {
   "name": "adum-contracts",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Shared zod schemas and types for ADUM",
   "type": "module",
@@ -17,18 +17,21 @@
     "./samples": {
       "types": "./dist/samples.d.ts",
       "import": "./dist/samples.js"
-    }
+    },
+    "./mock-map.json": "./mock/mock-map.json"
   },
   "files": [
     "dist",
-    "src"
+    "src",
+    "mock"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "prepare": "npm run build",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "build:mock": "tsx scripts/build-mock-map.ts"
   },
   "license": "MIT",
   "dependencies": {

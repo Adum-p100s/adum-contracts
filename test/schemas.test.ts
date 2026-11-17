@@ -83,6 +83,14 @@ describe('GameEvent', () => {
   it('unknown type fails', () => bad(GameEvent, { type: 'teleport' }));
   it('roll total must equal roll + modifier', () => bad(GameEvent, { ...sampleEvents[1], total: 99 }));
   it('d20 outside 1-20 fails', () => bad(GameEvent, { ...sampleEvents[1], roll: 21, total: 22 }));
+  it('roll dice: 2 dice with advantage, the kept die is the roll', () => {
+    const roll = sampleEvents[1];
+    bad(GameEvent, { ...roll, dice: [14] }); // advantage needs both dice
+    bad(GameEvent, { ...roll, dice: [14, 17] }); // 17 is higher, so roll 14 is wrong
+    ok(GameEvent, { ...roll, advantage: 'disadvantage', dice: [14, 17] });
+    bad(GameEvent, { ...roll, advantage: 'none', dice: [6, 14] });
+    ok(GameEvent, { ...roll, advantage: undefined, dice: undefined }); // 0.2.0 shape still parses
+  });
   it('choices need 2-4 options', () => bad(GameEvent, { ...sampleEvents[5], options: [{ id: 'a', label: 'only one' }] }));
   it('hardcore death must be permadeath', () => bad(GameEvent, { ...sampleEvents[10], difficulty: 'hardcore' }));
 });

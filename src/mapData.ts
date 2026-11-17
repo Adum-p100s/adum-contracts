@@ -59,7 +59,10 @@ const Point = z.strictObject({ x: NonNegInt, y: NonNegInt });
 
 /**
  * Map assembly: what the generator outputs and the frontend renders.
- * tiles is row-major (index = y * size + x) and holds tile ids from the art database.
+ * - tiles: the opaque ground layer, row-major (index = y * size + x), tile ids from the art database.
+ * - overlays: everything with a transparent background, drawn on top of the ground in array order:
+ *   blend edges, roads, details, obstacles, buildings. A cell may have several.
+ * - walkable: same indexing as tiles; already accounts for obstacles, buildings and water.
  */
 export const MapAssembly = z
   .strictObject({
@@ -67,7 +70,7 @@ export const MapAssembly = z
     size: z.number().int().min(MAP_SIZE_MIN).max(MAP_SIZE_MAX),
     environment_Type: EnvironmentType,
     tiles: z.array(Id),
-    overlays: z.array(z.strictObject({ x: NonNegInt, y: NonNegInt, tileId: Id })).default([]), // blend/transition art
+    overlays: z.array(z.strictObject({ x: NonNegInt, y: NonNegInt, tileId: Id })).default([]),
     walkable: z.array(z.boolean()), // same indexing as tiles
     spawns: z.array(z.strictObject({ eventCharacterId: z.string().min(1).max(64), x: NonNegInt, y: NonNegInt })),
     playerStart: Point,
@@ -82,3 +85,23 @@ export const MapAssembly = z
     m.overlays.forEach((o, i) => { if (!inside(o)) ctx.addIssue({ code: 'custom', path: ['overlays', i], message: 'outside the map' }); });
   });
 export type MapAssembly = z.infer<typeof MapAssembly>;
+
+/** Row-major index of a cell, the same indexing `tiles`, `walkable` and fog arrays use. */
+export function tileIndex(size: number, x: number, y: number): number {
+  return y * size + x;
+}
+
+/** How far the player sees, in tiles (a circle around the player). */
+export const FOG_REVEAL_RADIUS = 6;
+
+/**
+ * Fog of war: returns a new `revealed` array (size x size, row-major) with every cell within
+ * `radius` of (x, y) set to true. Pass `undefined` to start from a fully hidden map.
+ */
+export function revealAround(revealed: readonly boolean[] | undefined, size: number, x: number, y: number, radius = FOG_REVEAL_RADIUS): boolean[] {
+  const out = revealed ? revealed.slice() : new Array<boolean>(size * size).fill(false);
+  for (let cy = Math.max(0, y - radius); cy <= Math.min(size - 1, y + radius); cy++)
+    for (let cx = Math.max(0, x - radius); cx <= Math.min(size - 1, x + radius); cx++)
+      if ((cx - x) ** 2 + (cy - y) ** 2 <= radius * radius) out[tileIndex(size, cx, cy)] = true;
+  return out;
+}
