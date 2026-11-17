@@ -7,9 +7,11 @@ export const PowerTarget = z.enum(['self', 'enemy', 'all_enemies']);
 
 /**
  * What a buff changes while it lasts. A negative amount is a debuff (e.g. on an enemy).
- * ac: armor class, attack: attack rolls, damage: damage rolls, check: ability checks with `stat`.
+ * - ac: armor class. attack: attack rolls. damage: damage rolls. check: ability checks with `stat`.
+ * - stun: the target loses its turns while it lasts (knocked away, frozen). Amount is always -1.
+ * - evade: the next `amount` attacks against the holder miss automatically (blink, decoy). Amount is 1 or more.
  */
-export const BuffKind = z.enum(['ac', 'attack', 'damage', 'check']);
+export const BuffKind = z.enum(['ac', 'attack', 'damage', 'check', 'stun', 'evade']);
 export type BuffKind = z.infer<typeof BuffKind>;
 
 export const Buff = z
@@ -22,6 +24,8 @@ export const Buff = z
   .superRefine((b, ctx) => {
     if (b.kind === 'check' && !b.stat) ctx.addIssue({ code: 'custom', path: ['stat'], message: 'a check buff needs a stat' });
     if (b.kind !== 'check' && b.stat) ctx.addIssue({ code: 'custom', path: ['stat'], message: 'only check buffs take a stat' });
+    if (b.kind === 'stun' && b.amount !== -1) ctx.addIssue({ code: 'custom', path: ['amount'], message: 'a stun has amount -1; durationTurns is how many turns are lost' });
+    if (b.kind === 'evade' && b.amount < 1) ctx.addIssue({ code: 'custom', path: ['amount'], message: 'evade amount is the number of attacks avoided (1 or more)' });
   });
 export type Buff = z.infer<typeof Buff>;
 

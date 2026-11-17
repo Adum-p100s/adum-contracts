@@ -5,7 +5,7 @@ import {
 } from '../src/index.js';
 import {
   sampleCharacter, sampleEnemyInstance, sampleEnemyTemplate, sampleEvents, sampleMapAssembly, sampleMapData,
-  samplePotion, samplePower, sampleStats, sampleWeapon,
+  sampleEvadePower, samplePotion, samplePower, sampleStats, sampleStunPower, sampleWeapon,
 } from '../src/samples.js';
 
 const ok = (schema: { safeParse: (v: unknown) => { success: boolean } }, v: unknown) => expect(schema.safeParse(v).success).toBe(true);
@@ -127,4 +127,12 @@ describe('v0.2.0: buffs and AI profile', () => {
     const combat = sampleEvents.find((e) => e.type === 'combat_update');
     expect(combat && combat.type === 'combat_update' && combat.playerEffects.length).toBe(1);
   });
+});
+
+describe('v0.4.0: stun and evade', () => {
+  it('stun and evade powers are valid', () => { ok(Power, sampleStunPower); ok(Power, sampleEvadePower); });
+  it('a stun must have amount -1', () => bad(Power, { ...sampleStunPower, buff: { kind: 'stun', amount: -2, durationTurns: 1 } }));
+  it('evade needs a positive amount', () => bad(Power, { ...sampleEvadePower, buff: { kind: 'evade', amount: -1, durationTurns: 2 } }));
+  it('running stun and evade effects are valid on an enemy', () =>
+    ok(EnemyInstance, { ...sampleEnemyInstance, effects: [{ powerId: 'force_push', kind: 'stun', amount: -1, turnsLeft: 1 }, { powerId: 'blink_step', kind: 'evade', amount: 1, turnsLeft: 2 }] }));
 });

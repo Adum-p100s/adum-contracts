@@ -16,9 +16,9 @@ Changing a schema here changes the contract for everyone, so bump the version an
 ## Install (in adum-backend or adum-frontend)
 
 ```bash
-npm install github:Adum-p100s/adum-contracts#v0.3.0
+npm install github:Adum-p100s/adum-contracts#v0.4.0
 ```
-The repo is private, so your machine needs GitHub access to it (you're a collaborator). npm builds the package on install (`prepare` script).
+The repo is public, so this works anywhere, including CI and Render. npm builds the package on install (`prepare` script).
 
 ```ts
 import { Character, GameEvent, MapData, statModifier } from 'adum-contracts';
@@ -29,13 +29,13 @@ if (!result.success) console.error(result.error.issues);
 type Event = GameEvent;                     // every schema is also a TS type
 ```
 
-## What's in v0.3.0
+## What's in v0.4.0
 | Schema | Key rules |
 |---|---|
 | `Stats` | STR, DEX, CON, INT, WIS, CHA; integers 1-20 (cap 20). `statModifier(score)` = floor((score-10)/2). `POINT_BUY`: 27 points, 8-15 |
 | `ClassId` / `Difficulty` | `fighter`, `wizard`, `rogue` / `normal`, `hardcore` |
 | `Item` | type, rarity (`common`..`legendary`), weapons need `damage` + `damageStat`, armor needs `armorBonus`, consumables need `heal` or `restoreMana` |
-| `Power` | class (or any), mana cost, cooldown, target, stat, and at least one of damage dice, heal dice or a `buff` (`ac` / `attack` / `damage` / `check`, amount -10..10 but not 0, 1-10 turns; negative = debuff) |
+| `Power` | class (or any), mana cost, cooldown, target, stat, and at least one of damage dice, heal dice or a `buff` (`ac` / `attack` / `damage` / `check`, amount -10..10 but not 0, 1-10 turns; negative = debuff; or `stun` = target loses its turns, `evade` = the next N attacks miss) |
 | `EnemyTemplate` / `EnemyInstance` | fixed template rows with `aiProfile` (`aggressive` default, `caster`, `cowardly`) / one enemy in a live fight, with its active `effects` |
 | `Character` | class, difficulty, level (no cap), xp, stats, hp/mana <= max, inventory, equipment (`weapon`, `armor`, `accessory`), powers |
 | `MapData` | what Gemini fills in: `map_Size` 64-128 (square), `levelNumber`, `environment_Type`, `componentData` (roads, `roadConnections` = map edges, settlements, event characters placed by **zone**, never coordinates) |
@@ -59,12 +59,12 @@ Drawing order: `map.tiles[y * size + x]` first, then every entry of `map.overlay
 ## Changing a schema
 1. Edit `src/`, add a valid and an invalid case in `test/`, run `npm test`.
 2. Bump `version` in `package.json` and `CONTRACTS_VERSION` in `src/index.ts` (breaking change = minor bump while we're on 0.x).
-3. After merge, tag it: `git tag v0.3.0 && git push origin v0.3.0`, then update the `#tag` in the other repos.
+3. After merge, tag it: `git tag v0.4.0 && git push origin v0.4.0`, then update the `#tag` in the other repos.
 
 ## Working rules
 
 - **Never push straight to `main`.** Branch off `main`, open a pull request, and get **1 approval from someone other than you** before merging.
-  The repo is private on GitHub's free plan, so GitHub does not enforce this; it is a team agreement. Please keep it.
+  CI ("Lint and Vitest") must pass before a PR can merge; GitHub enforces that on `main`. The approval is a team agreement. Please keep it.
 - Branch names: `T###-short-description` (the Gantt ticket number), e.g. `T007-backend-skeleton`.
 - Put the ticket number in the PR title, e.g. `T007: backend skeleton`. The PR template asks what / why / how tested.
 - Secrets live only in Render and your local `.env` (git-ignored). Commit `.env.example` with variable names only.
@@ -84,6 +84,7 @@ Drawing order: `map.tiles[y * size + x]` first, then every entry of `map.overlay
 MIT, see [LICENSE](LICENSE).
 
 ## Changelog
+- **0.4.0:** `BuffKind` gains `stun` (target loses its turns; amount -1) and `evade` (the next `amount` attacks against the holder miss), for the Wizard's Force Push and Blink Step. Additive: every 0.3.0 object still parses.
 - **0.3.0:** mock map (T066): `mockMap`, `mockMapData`, `mockMapRevealed`, `mock/mock-map.json`; fog helpers `revealAround`, `tileIndex`, `FOG_REVEAL_RADIUS`; `roll_result` gains optional `advantage` and `dice` (T057). Additive: every 0.2.0 object still parses.
 - **0.2.0:** `Power.buff` (buffs and debuffs, T062), `ActiveEffect` on `EnemyInstance.effects` and `combat_update.playerEffects`, `EnemyTemplate.aiProfile` (T064). Additive: every 0.1.0 object still parses.
 - **0.1.0:** first schemas (T002).
