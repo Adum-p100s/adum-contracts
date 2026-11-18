@@ -7,7 +7,7 @@ Shared schemas and types for **ADUM: Artificial Dungeon Master** (CSCI 318, The 
 **Owner:** Saba, with Mohamed for the Gemini tool schemas
 
 ## What lives here
-- zod schemas + inferred types: Character, Stats (STR/DEX/CON/INT/WIS/CHA), Item, Power, Enemy, `map_Data`, GameEvent (SSE messages)
+- zod schemas + inferred types: Character, Stats (STR/DEX/CON/INT/WIS/CHA), Item, Power, Enemy, `map_Data`, GameEvent (SSE messages), Gemini tool arguments
 - Gemini function-calling tool schemas: `narrate`, `request_roll`, `start_combat`, `give_item`, `grant_xp`, `spawn_npc`, `set_quest`, `update_quest`, `offer_choice`, `show_popup`, `end_chapter`, `generate_map`
 - Installed by the other repos as a git dependency, pinned to a tag (`v0.1.0`, ...)
 
@@ -16,7 +16,7 @@ Changing a schema here changes the contract for everyone, so bump the version an
 ## Install (in adum-backend or adum-frontend)
 
 ```bash
-npm install github:Adum-p100s/adum-contracts#v0.4.0
+npm install github:Adum-p100s/adum-contracts#v0.5.0
 ```
 The repo is public, so this works anywhere, including CI and Render. npm builds the package on install (`prepare` script).
 
@@ -28,6 +28,13 @@ const result = GameEvent.safeParse(json);   // validate anything crossing a boun
 if (!result.success) console.error(result.error.issues);
 type Event = GameEvent;                     // every schema is also a TS type
 ```
+
+## What's in v0.5.0
+| Export | Key rules |
+|---|---|
+| `TOOL_SCHEMAS` / `TOOL_DECLARATIONS` | Zod argument schemas and Gemini function declarations for `narrate`, `request_roll`, `start_combat`, `give_item`, `grant_xp`, `spawn_npc`, `set_quest`, `update_quest`, `offer_choice`, `show_popup`, `end_chapter`, and `generate_map` |
+
+Tool arguments are validated with the exported schemas (for example, `RequestRollToolSchema.safeParse(args)`). The declarations are generated from the same schemas using Zod 4's JSON Schema conversion, so their JSON Schema and validation stay aligned. `generate_map` accepts the existing `MapData` shape as `map_Data`; event characters are placed by zone, never coordinates. Item and enemy references are IDs, not stat payloads.
 
 ## What's in v0.4.0
 | Schema | Key rules |
@@ -84,6 +91,7 @@ Drawing order: `map.tiles[y * size + x]` first, then every entry of `map.overlay
 MIT, see [LICENSE](LICENSE).
 
 ## Changelog
+- **0.5.0:** Gemini tool argument schemas and generated function declarations, including map field descriptions. Additive: existing shared schemas are unchanged.
 - **0.4.0:** `BuffKind` gains `stun` (target loses its turns; amount -1) and `evade` (the next `amount` attacks against the holder miss), for the Wizard's Force Push and Blink Step. Additive: every 0.3.0 object still parses.
 - **0.3.0:** mock map (T066): `mockMap`, `mockMapData`, `mockMapRevealed`, `mock/mock-map.json`; fog helpers `revealAround`, `tileIndex`, `FOG_REVEAL_RADIUS`; `roll_result` gains optional `advantage` and `dice` (T057). Additive: every 0.2.0 object still parses.
 - **0.2.0:** `Power.buff` (buffs and debuffs, T062), `ActiveEffect` on `EnemyInstance.effects` and `combat_update.playerEffects`, `EnemyTemplate.aiProfile` (T064). Additive: every 0.1.0 object still parses.
