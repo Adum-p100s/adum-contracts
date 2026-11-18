@@ -1,5 +1,5 @@
 /** adum-contracts: one source of truth for the shapes passed between frontend, backend and Gemini. */
-export const CONTRACTS_VERSION = '0.4.0';
+export const CONTRACTS_VERSION = '0.5.0';
 
 export * from './common.js';
 export * from './stats.js';
@@ -10,3 +10,4 @@ export * from './enemy.js';
 export * from './character.js';
 export * from './mapData.js';
 export * from './gameEvent.js';
+export * from './tools.js';
