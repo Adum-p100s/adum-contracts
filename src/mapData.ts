@@ -18,11 +18,11 @@ export const PlacementZone = z.enum(['settlement', 'road', 'forest_edge', 'water
 export type PlacementZone = z.infer<typeof PlacementZone>;
 
 export const EventCharacter = z.strictObject({
-  id: z.string().min(1).max(64), // unique within this map, e.g. "merchant_1"
-  kind: z.enum(['npc', 'enemy']),
-  templateId: Id, // enemy template or NPC portrait/template id
-  name: z.string().min(1).max(80),
-  zone: PlacementZone,
+  id: z.string().min(1).max(64).describe('Unique ID for this character within the map.'),
+  kind: z.enum(['npc', 'enemy']).describe('Whether the character is a non-player character or an enemy.'),
+  templateId: Id.describe('Enemy template or NPC portrait/template ID.'),
+  name: z.string().min(1).max(80).describe('Character name shown in the game.'),
+  zone: PlacementZone.describe('Placement zone; the map generator chooses the tile.'),
 });
 export type EventCharacter = z.infer<typeof EventCharacter>;
 
@@ -33,16 +33,17 @@ export type EventCharacter = z.infer<typeof EventCharacter>;
  */
 export const MapData = z
   .strictObject({
-    map_Size: z.number().int().min(MAP_SIZE_MIN).max(MAP_SIZE_MAX), // square: 64 -> 64x64
-    levelNumber: z.number().int().min(1),
-    environment_Type: EnvironmentType,
-    seed: z.number().int().min(0).optional(), // set by the backend if Gemini leaves it out
+    map_Size: z.number().int().min(MAP_SIZE_MIN).max(MAP_SIZE_MAX).describe('Side length of the square map, from 64 to 128 tiles.'),
+    levelNumber: z.number().int().min(1).describe('Chapter or level number for this map.'),
+    environment_Type: EnvironmentType.describe('Biome for the map.'),
+    seed: z.number().int().min(0).optional().describe('Optional non-negative map seed; the backend may supply one.'),
     componentData: z.strictObject({
-      roadAmount: z.number().int().min(0).max(20),
-      roadConnections: z.array(MapEdge).max(4),
-      settlementAmount: z.number().int().min(0).max(10),
-      eventCharacters: z.array(EventCharacter).max(20),
-    }),
+      roadAmount: z.number().int().min(0).max(20).describe('Number of roads to generate.'),
+      roadConnections: z.array(MapEdge.describe('Map edge that a road should reach.')).max(4)
+        .describe('Map edges the road network must connect to.'),
+      settlementAmount: z.number().int().min(0).max(10).describe('Number of settlements to generate.'),
+      eventCharacters: z.array(EventCharacter).max(20).describe('NPCs and enemies to place by zone; do not provide coordinates.'),
+    }).describe('Map components to generate.'),
   })
   .superRefine((m, ctx) => {
     const ids = m.componentData.eventCharacters.map((e) => e.id);
